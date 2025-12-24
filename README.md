@@ -132,6 +132,10 @@ Detailed summaries and comparisons are provided in the references directory.
 * Vivado HLS and Zynq
 * Fixed-point arithmetic and DSP techniques
 
+## System Flow
+<img width="323" height="720" alt="image" src="https://github.com/user-attachments/assets/3fab45d4-9369-43de-8a03-73380b1ee461" />
+
+
 ## Future Work
 
 * Adaptive equalization techniques
