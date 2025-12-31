@@ -1,295 +1,147 @@
-# But what exactly is a Neural Network?
+# What is a Neural Network?
 
-## First: what is a neuron _really?_
+## First: what is a neuron really?
 
-* A neuron is not a brain cell.
-* A neuron is just a number.
+A neuron is not a brain cell. A neuron is just a number.
 
-For now let us consider a neuron to be a thing which holds a number. Specifically a number between 0 and 1. 
+For now, think of a neuron as something that holds a single number, usually between 0 and 1. It answers questions like:
 
-It answers questions like:
+- “How strongly do I see a curve here?”
+- “How confident am I that this feature exists?”
 
-* “How strongly do I see a curve here?”
-* "How confident am I that this feature exists?"
-
-That stored number is called the _activation._
+That stored number is called the activation.
 
 ## Activation — the “brightness” of a neuron
 
-### What is an activation?
+What is an activation?
 
-An activation is:
+- The current value stored inside a neuron.
 
-* the current value inside a neuron
+In visual explanations, neurons are drawn as circles that glow:
 
-In the photo, neurons are drawn as circles that glow:
+- dim → small number (close to 0)  
+- bright → large number (close to 1)
 
-* dim → small number (close to 0)
-* bright → large number (close to 1)
-<img width="646" height="683" alt="image" src="https://github.com/user-attachments/assets/4e613cbd-41ba-44d5-ad9b-0a55ca8001fa" />
+When you see a bright neuron, it means: “This neuron is strongly active — it thinks its feature is present.”
 
-So when you see a bright neuron, it means:
+<img width="639" height="678" alt="nn" src="https://github.com/user-attachments/assets/20bf9860-aa88-4932-b127-073a47e6f228" />
 
-“This neuron is strongly active — it thinks its feature is present.”
-
-## Example
-Imagine a neuron whose job is:
-
-* “Do I see a vertical line?”
-* If there is no vertical line → activation ≈ 0
-
-* If there is a clear vertical line → activation ≈ 1
-
-* If it’s kind of there → activation ≈ 0.4 or 0.6
-
-That number is the activation.
+Example:
+- Neuron task: “Do I see a vertical line?”
+  - No vertical line → activation ≈ 0
+  - Clear vertical line → activation ≈ 1
+  - Faint/partial line → activation ≈ 0.4 or 0.6
 
 ## Weights — deciding what matters more
 
-Now comes the most important idea.
+Neurons do not treat all inputs equally. They ask: “Which inputs should I care about more?”
 
-Neurons do not look at the input equally.
+What is a weight?
+- A weight is a number that controls how important one connection is.
 
-They ask:
+Visual intuition:
+- thick line → strong influence (large weight)
+- thin line → weak influence (small weight)
 
-“Which inputs should I care about more?”
+So:
+- large weight → that input matters a lot
+- small weight → that input barely matters
 
-That’s what weights do.
-
-## What is a weight?
-
-A weight is:
-
-a number that controls how important one connection is
-
-* Thick lines = strong influence
-* Thin lines = weak influence
-
-So if:
-
-* weight is large → that input matters a lot
-
-* weight is small → that input barely matters
-
-## Example
-
-Suppose a neuron checks for a curve:
-
-* pixel A (important) → high weight
-
-* pixel B (less important) → low weight
-
-The neuron listens more to A than B.
+Example:
+- Neuron checking for a curve:
+  - pixel A (important) → high weight
+  - pixel B (less important) → low weight
 
 ## Weighted sum — combining opinions
 
-Before a neuron decides how bright it should glow, it:
+Before a neuron decides how bright to glow, it:
+1. looks at all incoming activations,
+2. multiplies each by its weight,
+3. adds everything together.
 
-* Looks at all incoming activations
+This combined value summarizes all inputs with their relative importance. The result can be large, negative, or otherwise "messy" — so we apply one more step.
 
-* Multiplies each by its weight
+Mathematically:
+- z = Σ (w_i * x_i) + b
+  - x_i = input activations
+  - w_i = weights
+  - b = bias
+- activation a = activation_function(z)
 
-* Adds everything together
+## Activation functions — squashing the result
 
-Conceptually:
+Activation functions turn the weighted sum into a usable activation value.
 
-“Let me combine all the opinions, but care more about some than others.”
+Two common options:
 
-This combined value is not yet the activation.
+### Sigmoid — a smooth on/off switch
+- Squashes any input to a value between 0 and 1.
+- Useful for representing confidence/brightness.
+- S-shaped curve: gradual at extremes, steep in the middle.
+- Historical and intuitive, but in deep nets it can cause vanishing gradients (neurons saturate near 0 or 1), slowing learning.
+<img width="1008" height="644" alt="image" src="https://github.com/user-attachments/assets/ac0eb75f-7880-4d03-835a-9aff6e51f099" />
 
-### Why?
 
-Because it could be:
+### ReLU — the modern default
+- ReLU(z) = max(0, z)
+  - If z < 0 → 0
+  - If z ≥ 0 → z
+- Does not squash positive values, so signals propagate more easily through deep networks.
+- Simple, fast, and effective — commonly used in hidden layers.
+- Sigmoid is still used sometimes at output layers (e.g., for probabilities).
+<img width="846" height="542" alt="image" src="https://github.com/user-attachments/assets/8015c655-71a3-4997-969e-608a6e8f5970" />
 
-* very large
+## Bias — shifting the decision
 
-* negative
+What is bias (intuitively)?
+- A bias is a small number added to the weighted sum that makes a neuron easier or harder to activate.
 
-* messy
+Why bias?
+- Without bias, a neuron’s activation depends solely on inputs.
+- Bias acts like a baseline push (like sensitivity):
+  - higher bias → neuron turns on easier
+  - lower (or negative) bias → neuron requires stronger input to turn on
 
-So we need one more step.
-
-## Activation function — squashing the result
-
-This is where _sigmoid_ comes in.
-
-### What is the sigmoid function?
-
-Sigmoid is introduced as a smooth squashing function.
-
-It does one simple job:
-
-- Take _any_ number and squash it between 0 and 1
-
-So no matter how big or small the input is:
-
-* output is always between 0 and 1
-
-That makes it perfect for **brightness levels.**
-
-## Why not just use the raw number?
-
-Because we want:
-
-* consistency
-
-* smooth changes
-
-* neurons that behave predictably
-
-Sigmoid ensures:
-
-* small input → near 0
-
-* large input → near 1
-
-* middle → smooth transition
-
-<img width="1173" height="751" alt="image" src="https://github.com/user-attachments/assets/03482dd3-c2fe-4507-9ae5-dd8022ac85a9" />
-
-## Visual intuition
-
-In the picture:
-
-* sigmoid looks like an S-shaped curve
-
-* slow rise → fast change → slow flattening
-
-This means:
-
-* small changes near the middle matter more
-
-* extreme values don’t explode
+Analogy:
+- A motion-sensor light:
+  - No bias → turns on only with strong movement
+  - With bias → turns on more easily
 
 ## Putting it all together — one neuron’s life
 
-A single neuron does this:
+A single neuron:
+1. Receives input numbers (activations).
+2. Multiplies them by corresponding weights.
+3. Adds them up and adds a bias.
+4. Passes the result through an activation function (Sigmoid or ReLU).
+5. Produces a new activation (a single number).
 
-* Receives numbers (activations)
-
-* Multiplies them by weights
-
-* Adds them up
-
-* Passes the result through sigmoid
-
-* Produces a new activation
-
-That’s it.
-
-No thinking.
-
-No intelligence.
-
-Just numbers flowing.
+No thinking. No intelligence. Just numbers flowing and being transformed.
 
 ## Why layers matter
 
-The magic comes from **layers**.
+A neural network is many neurons arranged in layers. Each layer repeats the neuron's process:
 
-**First layer:**
+- First layer → detects very simple features (edges, dots).
+- Middle layers → combine simple features into more complex patterns (curves, shapes).
+- Final layer → makes a decision (e.g., “this is a 5”).
 
-* detects simple things (edges, dots)
+Depth and composition of layers let the network build hierarchical, increasingly abstract representations.
 
-**Middle layers:**
+## What learning actually changes
 
-* combine them (curves, loops)
+When a neural network learns, it does not change its structure or add logic. Learning only changes:
+- weights
+- biases
 
-**Final layer:**
+Learning is simply adjusting numbers so the network’s outputs improve on the task.
 
-* makes decisions (“this is a 5”)
+## Final takeaway
 
-Each layer uses:
-
-* activations
-
-* weights
-
-* sigmoid
-
-Over and over.
-
-## Bias:
-
-### What problem does bias solve?
-
-Imagine a neuron that asks:
-
-“Do I see a vertical line?”
-
-Now suppose:
-
-* the image is almost _empty_
-
-* but there is a faint vertical line
-
-Without bias, the neuron might say:
-
-* “Not enough signal → I stay off.”
-
-But we want the neuron to be able to say:
-
-* “Even a small signal is enough for me.”
-
-That’s what bias allows.
-
-## What is bias (intuitively)?
-
-A bias is:
-
-* a small number that lets a neuron activate even when inputs are weak
-
-Think of bias as a **baseline push.**
-
-## Human analogy 
-
-Imagine a motion sensor light.
-
-**Without bias:**
-
-it turns on only when movement is strong
-
-**With bias:**
-
-it turns on more easily
-
-Bias controls how easy it is to **activate** a neuron.
-
-_A bias shifts the neuron’s decision boundary so it doesn’t depend on inputs alone._
-
-## In short: 
-
-**A neural network is just a bunch of neurons that repeatedly take weighted sums of numbers and squash them through smooth functions.**
-
-That’s the entire system.
-
-## Important: what learning actually changes
-
-When a neural network learns, it does NOT:
-
-* change the structure
-
-* add logic
-
-* gain understanding
-
-It ONLY changes:
-
-* weights
-
-* biases (offsets similar to weights)
-
-* Learning = adjusting numbers.
-
-## Final Takeaway
-
-* Activation → how strongly a neuron is “on”
-
-* Weight → how much one input matters
-
-* Sigmoid → smooth way to keep values between 0 and 1
-
-* Neuron → a tiny calculator
-
-* Neural network → many calculators stacked together
-
+- Activation → how strongly a neuron is “on” (a number).
+- Weight → how much one input matters (a number).
+- Bias → how easy it is for a neuron to activate (a number).
+- Sigmoid → smooth, bounded activation (historical, intuitive).
+- ReLU → simple, fast, modern activation.
+- Neuron → a tiny calculator applying a weighted sum, bias, and activation.
+- Neural network → many such calculators stacked together.
